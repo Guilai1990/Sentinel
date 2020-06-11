@@ -114,8 +114,18 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
+    /**
+     *
+     * @param resourceWrapper 资源的包装类型，可以是字符串类型的资源描述，也可以是方法类的
+     * @param count 此次需要消耗的令牌
+     * @param prioritized 是否注重优先级
+     * @param args 额外参数
+     * @return
+     * @throws BlockException
+     */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
+        // 获取方法调用的上下文环境，上下环境对象存储在线程本地变量
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
@@ -129,10 +139,13 @@ public class CtSph implements Sph {
         }
 
         // Global switch is close, no rule checking will do.
+        // sentinel提供一个全局关闭的开关，如果关闭，返回的CtEntry的chain为空，从这里可以看出，如果chain为空，
+        // 则不会触发sentinel流控相关逻辑，从侧面反映了该属性的重要性
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 为该资源加载处理器链，这里是最重要的方法
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -143,10 +156,13 @@ public class CtSph implements Sph {
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 根据资源ID、处理器链、上下文环境构建CtEntry对象
         Entry e = new CtEntry(resourceWrapper, chain, context);
         try {
+            // 调用chain的entry方法
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
+            // 如果出现BlockException，调用CtEntry的exit方法
             e.exit(count, args);
             throw e1;
         } catch (Throwable e1) {

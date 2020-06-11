@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Result;
  * @author Eric Zhao
  */
 @FunctionalInterface
+// 提供全局的Fallback回调，可以分别为服务提供端，服务消费端指定
 public interface DubboFallback {
 
     /**

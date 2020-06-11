@@ -124,6 +124,7 @@ import java.util.Map;
  * @see ContextUtil
  */
 @SpiOrder(-10000)
+// 用于构建调用链
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
     /**

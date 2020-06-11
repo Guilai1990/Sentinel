@@ -138,6 +138,7 @@ import java.util.Map;
  * @author Eric Zhao
  */
 @SpiOrder(-2000)
+// 实现限流机制
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     private final FlowRuleChecker checker;

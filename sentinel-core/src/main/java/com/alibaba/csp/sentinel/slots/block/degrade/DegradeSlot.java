@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author leyou
  */
 @SpiOrder(-1000)
+// 实现熔断机制
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

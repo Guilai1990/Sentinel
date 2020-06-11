@@ -46,6 +46,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author jialiang.linjl
  */
 @SpiOrder(-9000)
+// 用于集群限流、熔断
 public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     /**

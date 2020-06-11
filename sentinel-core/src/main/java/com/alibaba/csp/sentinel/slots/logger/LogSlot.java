@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * to provide concrete logs for troubleshooting.
  */
 @SpiOrder(-8000)
+// 用于记录日志
 public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

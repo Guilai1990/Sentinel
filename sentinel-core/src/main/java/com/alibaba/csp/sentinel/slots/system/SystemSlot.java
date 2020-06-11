@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author leyou
  */
 @SpiOrder(-5000)
+// 用于验证系统级别的规则
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

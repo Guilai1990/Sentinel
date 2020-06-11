@@ -32,6 +32,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author Eric Zhao
  */
 @SpiOrder(-6000)
+// 用于权限校验
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

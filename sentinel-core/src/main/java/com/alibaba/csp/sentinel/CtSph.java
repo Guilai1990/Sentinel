@@ -317,6 +317,7 @@ public class CtSph implements Sph {
 
     @Override
     public AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException {
+        // 该方法用来表示资源的方式为一个字符串，故创建一个StringResourceWrapper对象来表示一个Sentinel中的资源
         StringResourceWrapper resource = new StringResourceWrapper(name, type);
         return asyncEntryInternal(resource, count, args);
     }

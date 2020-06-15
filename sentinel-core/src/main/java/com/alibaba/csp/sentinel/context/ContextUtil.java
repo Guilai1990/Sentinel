@@ -47,11 +47,13 @@ public class ContextUtil {
     /**
      * Store the context in ThreadLocal for easy access.
      */
+    // 使用ThreadLocal对象来存储线程上下文环境对象Context
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
     /**
      * Holds all {@link EntranceNode}. Each {@link EntranceNode} is associated with a distinct context name.
      */
+    // Map<String, DefaultNode>其吉安为context名称，用来缓存对应的EntranceNode
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>();
 
     private static final ReentrantLock LOCK = new ReentrantLock();
@@ -118,25 +120,32 @@ public class ContextUtil {
     }
 
     protected static Context trueEnter(String name, String origin) {
+        // 1从ThreadLocal中获取Context对象，线程首次获取时为空
         Context context = contextHolder.get();
         if (context == null) {
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
+            // 2根据context名称尝试从缓存中去找对应的Node，通常时EntranceNode。即用来表示入口的节点Node为EntranceNode
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
+                // 3如果localCacheNameMap已缓存的对象容量默认超过2000，则不纳入Sentinel限流、熔断机制
+                // 即一个应用，默认不能定义2000个资源统计入口
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
                     setNullContext();
                     return NULL_CONTEXT;
                 } else {
                     LOCK.lock();
                     try {
+                        // 4双重检查锁
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
                                 setNullContext();
                                 return NULL_CONTEXT;
                             } else {
+                                // 5为该context name创建一个对应的EntranceNode
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
                                 // Add entrance node.
+                                // 将创建的EntranceNode加入到根节点的子节点中
                                 Constants.ROOT.addChild(node);
 
                                 Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
@@ -150,8 +159,10 @@ public class ContextUtil {
                     }
                 }
             }
+            // 7创建Context对象，将Context对象中的入口节点设置为新创建的EntranceNode
             context = new Context(node, name);
             context.setOrigin(origin);
+            // 8将新创建的Context对象存入当前线程本地环境变量中（ThreadLocal）
             contextHolder.set(context);
         }
 
@@ -197,6 +208,8 @@ public class ContextUtil {
      * Exit context of current thread, that is removing {@link Context} in the
      * ThreadLocal.
      */
+    // 退出当前上下文环境
+    // 前提条件：当前的上下文环境的当前调用节点已经退出，否则无法移除
     public static void exit() {
         Context context = contextHolder.get();
         if (context != null && context.getCurEntry() == null) {
@@ -270,6 +283,9 @@ public class ContextUtil {
      * @param f       lambda to run within the context
      * @since 0.2.0
      */
+    // 异步上下文环境切换
+    // ThreadLocal中的数据是无法跨线程访问的，故一个线程中启动另一个线程，上下文环境是无法直接被传递的
+    // 故Sentinel为先创建的线程再创建一个Context，在运行子线程时，调用runOnContext来切换上下文环境
     public static void runOnContext(Context context, Runnable f) {
         Context curContext = replaceContext(context);
         try {

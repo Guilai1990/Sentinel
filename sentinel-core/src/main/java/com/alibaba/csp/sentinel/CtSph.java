@@ -208,16 +208,21 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+        // 1 chainMap 一个全局的缓存表，即同一个资源ResourceWrapper（同一个资源名称）会共同使用同一个ProcessorSlotChain
+        // 即不同的线程在访问同一个资源保护的代码时，这些线程将共同使用ProcessorSlotChain中的各个ProcessorSLot.
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
                 chain = chainMap.get(resourceWrapper);
                 if (chain == null) {
                     // Entry size limit.
+                    // 2 如果同时在进入的资源个数超过MAX_SLOT_CHAIN_SIZE，默认为6000，会返回null
+                    // 则不对本次请求执行限流，熔断计算，而是直接跳过
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
 
+                    // 3 通过SlotChainProvider创建对应的处理链
                     chain = SlotChainProvider.newSlotChain();
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);

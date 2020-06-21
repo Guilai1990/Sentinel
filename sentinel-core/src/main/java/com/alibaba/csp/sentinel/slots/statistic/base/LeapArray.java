@@ -223,18 +223,22 @@ public abstract class LeapArray<T> {
      * @param timeMillis a valid timestamp in milliseconds
      * @return the previous bucket item before provided timestamp
      */
+    // 根据当前时间获取前一个有效滑动窗口
     public WindowWrap<T> getPreviousWindow(long timeMillis) {
         if (timeMillis < 0) {
             return null;
         }
+        // 1 用当前时间减去一个时间窗口间隔，然后去定位所在LeadArray中数组的下标
         int idx = calculateTimeIdx(timeMillis - windowLengthInMs);
         timeMillis = timeMillis - windowLengthInMs;
         WindowWrap<T> wrap = array.get(idx);
 
+        // 如果为空或已过期，则返回null
         if (wrap == null || isWindowDeprecated(wrap)) {
             return null;
         }
 
+        // 如果定位的窗口的开始时间再加上windowLengthInMs小于timeMills，说明失效，则返回null。通常不会走到该分支
         if (wrap.windowStart() + windowLengthInMs < (timeMillis)) {
             return null;
         }

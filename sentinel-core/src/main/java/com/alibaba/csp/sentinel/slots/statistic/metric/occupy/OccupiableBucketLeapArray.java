@@ -38,8 +38,10 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
 
     @Override
     public MetricBucket newEmptyBucket(long time) {
+        // 新建一个MetricBucket
         MetricBucket newBucket = new MetricBucket();
 
+        // 新建的时候，如果曾经有借用过未来的滑动窗口，则将未来的滑动窗口上手机的数据copy到新创建的采集指标上，再返回
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         if (borrowBucket != null) {
             newBucket.reset(borrowBucket);
